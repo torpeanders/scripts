@@ -1,0 +1,43 @@
+#!/bin/bash
+
+apt_deps=(emacs tmux qtctreator vim)
+
+check_deps() {
+    # Check apt packages
+    all=$(printf "%s "  "${apt_deps[@]}")
+    if ! dpkg -s $all >/dev/null 2>&1; then
+        echo "Apt packages are missing"
+
+        for p in "${apt_deps[@]}"; do
+            if ! dpkg -s $p >null 2>&1; then
+                echo "  $p"
+            fi
+        done
+    fi
+
+    # for and if with dpkg -s
+    # grep in pip list
+}
+
+install_deps() {
+    echo "install deps"
+    # install with apt-get install
+    # install system stuff with pip install
+    # install our stuff with pip install --user
+}
+
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters"
+    exit 1
+fi
+
+case "$1" in
+    check)
+        check_deps
+        ;;
+    install)
+        install_deps
+        ;;
+    *)
+        echo "Unknown parameter '$1'. Use 'check' or 'install'"
+esac
