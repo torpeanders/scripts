@@ -1,16 +1,16 @@
 #!/bin/bash
 
 apt_deps=(emacs tmux vim)
-apt_deps_string=$(printf "%s "  "${apt_deps[@]}")
-
 pip_deps=(paramiko robotframework boto)
-pip_deps_string=$(printf "%s "  "${pip_deps[@]}")
+
+#"${foo[@]}" ekspanderer til hvert ord i foo med "" rundt hvert enkelt ord""
+#missing=($(comm -23 <(for i in "${dep_list[@]}"; do echo $i; done|sort) <(dpkg -l| awk '/^i/{print $2}'|sort)))
 
 check_deps() {
     ret=0
 
     # Check apt packages
-    if ! dpkg -s $apt_deps_string >/dev/null 2>&1; then
+    if ! dpkg -s "${apt_deps[@]}" >/dev/null 2>&1; then
         echo "Missing apt packages:"
 
         for p in "${apt_deps[@]}"; do
@@ -69,10 +69,10 @@ install_deps() {
     # Install apt packages
     echo sudo apt-get update
     echo sudo apt-get upgrade
-    echo sudo apt-get install $apt_deps_string
+    echo sudo apt-get install "${apt_deps[@]}"
 
     # Install pip packages
-    echo sudo pip install -U -q $pip_deps_string
+    echo sudo pip install -U -q "${pip_deps[@]}")
 }
 
 if [ "$#" -ne 1 ]; then
