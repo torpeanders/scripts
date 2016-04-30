@@ -1,29 +1,78 @@
 #!/bin/bash
 
-apt_deps=(emacs tmux qtctreator vim)
+apt_deps=(emacs tmux vim)
+apt_deps_string=$(printf "%s "  "${apt_deps[@]}")
+
+pip_deps=(paramiko robotframework boto)
+pip_deps_string=$(printf "%s "  "${pip_deps[@]}")
 
 check_deps() {
+    ret=0
+
     # Check apt packages
-    all=$(printf "%s "  "${apt_deps[@]}")
-    if ! dpkg -s $all >/dev/null 2>&1; then
-        echo "Apt packages are missing"
+    if ! dpkg -s $apt_deps_string >/dev/null 2>&1; then
+        echo "Missing apt packages:"
 
         for p in "${apt_deps[@]}"; do
             if ! dpkg -s $p >null 2>&1; then
                 echo "  $p"
+                ret=1
             fi
         done
     fi
 
-    # for and if with dpkg -s
-    # grep in pip list
+    pip_warned=0
+    pip_installed=$(pip list)
+    for p in "${pip_deps[@]}"; do
+        if [[ ! $pip_installed =~ $p ]]; then
+            if [[ $pip_warned -eq 0 ]]; then
+                pip_warned=1
+                echo "Missing pip packages:"
+            fi
+            echo "  $p"
+            ret=1
+        fi
+    done
+
+
+    # TODO: always install our own pip modules. This because it
+    # will reinstall them, and want to have any changes made in
+    # the repository
+
+    return $ret
+}
+
+# Word of warning: This goes online to check the latest package
+# version. That can be slow, and should not be used in build scripts
+check_outdated() {
+    ret=0
+
+    pip_warned=0
+    pip_outdated=$(pip list -o)
+    for p in "${pip_deps[@]}"; do
+        if [[ $pip_outdated =~ $p ]]; then
+            if [[ $pip_warned -eq 0 ]]; then
+                pip_warned=1
+                echo "Outdated pip packages:"
+            fi
+            echo "  $p"
+            ret=1
+        fi
+    done
+
+    return $ret
 }
 
 install_deps() {
-    echo "install deps"
-    # install with apt-get install
-    # install system stuff with pip install
-    # install our stuff with pip install --user
+    # TODO: add any missing PPAs
+
+    # Install apt packages
+    echo sudo apt-get update
+    echo sudo apt-get upgrade
+    echo sudo apt-get install $apt_deps_string
+
+    # Install pip packages
+    echo sudo pip install -U -q $pip_deps_string
 }
 
 if [ "$#" -ne 1 ]; then
@@ -31,13 +80,23 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+# Check that we have pip installed
+if ! pip >/dev/null 2>&1; then
+    echo "Python installer pip is missing."
+    echo "https://pip.pypa.io/en/stable/installing/"
+    exit 1
+fi
+
 case "$1" in
     check)
         check_deps
+        ;;
+    outdated)
+        check_outdated
         ;;
     install)
         install_deps
         ;;
     *)
-        echo "Unknown parameter '$1'. Use 'check' or 'install'"
+        echo "Unknown parameter '$1'. Use 'check', 'outdated' or 'install'"
 esac
