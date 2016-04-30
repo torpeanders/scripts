@@ -3,37 +3,22 @@
 apt_deps=(emacs tmux vim)
 pip_deps=(paramiko robotframework boto)
 
-#"${foo[@]}" ekspanderer til hvert ord i foo med "" rundt hvert enkelt ord""
-#missing=($(comm -23 <(for i in "${dep_list[@]}"; do echo $i; done|sort) <(dpkg -l| awk '/^i/{print $2}'|sort)))
-
 check_deps() {
     ret=0
 
     # Check apt packages
-    if ! dpkg -s "${apt_deps[@]}" >/dev/null 2>&1; then
-        echo "Missing apt packages:"
-
-        for p in "${apt_deps[@]}"; do
-            if ! dpkg -s $p >null 2>&1; then
-                echo "  $p"
-                ret=1
-            fi
-        done
+    missing=($(comm -23 <(for i in "${apt_deps[@]}"; do echo $i; done|sort) <(dpkg -l| awk '/^i/{print $2}'|sort)))
+    if [ -n $missing ]; then
+        echo "Missing apt packages:" "${[missing[@]}"
+        ret=1
     fi
 
-    pip_warned=0
-    pip_installed=$(pip list)
-    for p in "${pip_deps[@]}"; do
-        if [[ ! $pip_installed =~ $p ]]; then
-            if [[ $pip_warned -eq 0 ]]; then
-                pip_warned=1
-                echo "Missing pip packages:"
-            fi
-            echo "  $p"
-            ret=1
-        fi
-    done
-
+    # Check pip packages
+    missing=($(comm -23 <(for i in "${pip_deps[@]}"; do echo $i; done|sort) <(pip list| awk '{print $1}'|sort)))
+    if [ -n $missing ]; then
+        echo "Missing pip packages:" "${[missing[@]}"
+        ret=1
+    fi
 
     # TODO: always install our own pip modules. This because it
     # will reinstall them, and want to have any changes made in
@@ -47,18 +32,12 @@ check_deps() {
 check_outdated() {
     ret=0
 
-    pip_warned=0
-    pip_outdated=$(pip list -o)
-    for p in "${pip_deps[@]}"; do
-        if [[ $pip_outdated =~ $p ]]; then
-            if [[ $pip_warned -eq 0 ]]; then
-                pip_warned=1
-                echo "Outdated pip packages:"
-            fi
-            echo "  $p"
-            ret=1
-        fi
-    done
+    # Check pip packages
+   outdated=($(comm -12 <(for i in "${pip_deps[@]}"; do echo $i; done|sort) <(pip list -o| awk '{print $1}'|sort)))
+    if [ -n $outdated ]; then
+        echo "Outdated pip packages:" "${[outdated[@]}"
+        ret=1
+    fi
 
     return $ret
 }
