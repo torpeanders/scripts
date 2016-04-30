@@ -20,15 +20,14 @@ check_deps() {
         ret=1
     fi
 
-    # TODO: always install our own pip modules. This because it
-    # will reinstall them, and want to have any changes made in
-    # the repository
+    # TODO: always install our own pip modules. This because it will
+    # reinstall them, and we want any changes made in the repository
 
     return $ret
 }
 
 # Word of warning: This goes online to check the latest package
-# version. That can be slow, and should not be used in build scripts
+# versions. That can be slow, and should not be used in build scripts
 check_outdated() {
     ret=0
 
