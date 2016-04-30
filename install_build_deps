@@ -8,15 +8,15 @@ check_deps() {
 
     # Check apt packages
     missing=($(comm -23 <(for i in "${apt_deps[@]}"; do echo $i; done|sort) <(dpkg -l| awk '/^i/{print $2}'|sort)))
-    if [ -n $missing ]; then
-        echo "Missing apt packages:" "${[missing[@]}"
+    if [ -n "${missing[@]}" ]; then
+        echo "Missing apt packages:" "${missing[@]}"
         ret=1
     fi
 
     # Check pip packages
     missing=($(comm -23 <(for i in "${pip_deps[@]}"; do echo $i; done|sort) <(pip list| awk '{print $1}'|sort)))
-    if [ -n $missing ]; then
-        echo "Missing pip packages:" "${[missing[@]}"
+    if [ -n "${missing[@]}" ]; then
+        echo "Missing pip packages:" "${missing[@]}"
         ret=1
     fi
 
@@ -33,8 +33,8 @@ check_outdated() {
 
     # Check pip packages
    outdated=($(comm -12 <(for i in "${pip_deps[@]}"; do echo $i; done|sort) <(pip list -o| awk '{print $1}'|sort)))
-    if [ -n $outdated ]; then
-        echo "Outdated pip packages:" "${[outdated[@]}"
+   if [ -n "${outdated[@]}" ]; then
+        echo "Outdated pip packages:" "${outdated[@]}"
         ret=1
     fi
 
