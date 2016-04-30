@@ -50,7 +50,7 @@ install_deps() {
     echo sudo apt-get install "${apt_deps[@]}"
 
     # Install pip packages
-    echo sudo pip install -U -q "${pip_deps[@]}")
+    echo sudo pip install -U -q "${pip_deps[@]}"
 }
 
 if [ "$#" -ne 1 ]; then
