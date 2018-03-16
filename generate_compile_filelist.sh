@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Start a watch on your source directory before compiling your code/project.
 # When the compilation is done, hit enter and get a list of the chS files 
@@ -13,5 +13,5 @@ inotifywait -r -m -e access "$WATCHED_DIR" --format "%w%f" > $OUTFILE.tmp &
 INWJOB=$!
 read -p "Press [Enter] key when done watching..."
 kill $INWJOB
-sort -u $OUTFILE.tmp | grep -E '\.[chS]$' > $OUTFILE
+sort -u $OUTFILE.tmp | grep -aE '\.([ch](pp)?|S)$' | grep -v '/_build' > $OUTFILE
 
